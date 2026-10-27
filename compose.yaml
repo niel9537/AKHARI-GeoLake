@@ -8,6 +8,23 @@ services:
     networks:
       - geolake-net
 
+  postgis:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: geolake
+      POSTGRES_USER: geolake_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgis-data:/var/lib/postgresql/data
+    networks:
+      - geolake-net
+
 networks:
   geolake-net:
     driver: bridge
+
+volumes:
+  postgis-data:
