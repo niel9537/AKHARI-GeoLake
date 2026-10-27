@@ -1,0 +1,13 @@
+
+name: akhari-geolake
+
+services:
+  lab:
+    image: alpine:3.20
+    command: ["sh", "-c", "echo AKHARI GeoLake Compose Ready"]
+    networks:
+      - geolake-net
+
+networks:
+  geolake-net:
+    driver: bridge
