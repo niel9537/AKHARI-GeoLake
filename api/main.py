@@ -195,3 +195,52 @@ def geojson_kecamatan():
             status_code=503,
             detail="Gagal membaca polygon kecamatan"
         )
+
+
+@app.get("/api/analisis/akses-desa")
+def geojson_akses_faskes_desa():
+    try:
+        with get_connection() as conn:
+            rows = conn.execute("""
+                SELECT
+                    id,
+                    desa,
+                    kecamatan,
+                    fasilitas_terdekat,
+                    jenis_fasilitas,
+                    jarak_meter,
+                    kategori_jarak,
+                    warna_hex,
+                    ST_AsGeoJSON(geom)::json AS geometry
+                FROM v_peta_akses_faskes_desa
+                WHERE geom IS NOT NULL
+                ORDER BY kecamatan, desa, id
+            """).fetchall()
+
+        return {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "id": r["id"],
+                    "geometry": r["geometry"],
+                    "properties": {
+                        "desa": r["desa"],
+                        "kecamatan": r["kecamatan"],
+                        "fasilitas_terdekat": r["fasilitas_terdekat"],
+                        "jenis_fasilitas": r["jenis_fasilitas"],
+                        "jarak_meter": float(r["jarak_meter"])
+                        if r["jarak_meter"] is not None else None,
+                        "kategori_jarak": r["kategori_jarak"],
+                        "warna_hex": r["warna_hex"]
+                    }
+                }
+                for r in rows
+            ]
+        }
+
+    except psycopg.Error:
+        raise HTTPException(
+            status_code=503,
+            detail="Gagal membaca analisis akses fasilitas kesehatan"
+        )
