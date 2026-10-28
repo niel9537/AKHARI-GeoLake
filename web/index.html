@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AKHARI GeoLake — WebGIS</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--navy:#13243b;--gold:#ffca21;--bg:#f3f6fa;--muted:#65758b;--border:#e3e9f0}*{box-sizing:border-box}body{margin:0;font:14px/1.5 Inter,Segoe UI,Arial,sans-serif;color:#15263c;background:var(--bg)}.shell{display:grid;grid-template-columns:292px minmax(0,1fr);height:100vh}.side{background:var(--navy);color:white;display:flex;flex-direction:column;min-height:0}.brand{padding:24px 20px;border-bottom:1px solid #ffffff20;display:flex;gap:12px;align-items:center}.mark{width:42px;height:42px;background:var(--gold);border-radius:13px;display:grid;place-items:center;color:var(--navy);font-size:23px;font-weight:900}.brand strong{font-size:19px;letter-spacing:.2px}.brand small{display:block;color:#aab8cb}.sidebody{padding:20px;overflow:auto}.section{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:#94a9c0;margin:12px 0}.navitem{padding:11px 13px;border-radius:10px;background:#ffffff12;border-left:3px solid var(--gold);font-weight:650;margin-bottom:24px}.field{display:block;font-size:12px;color:#c5d1df;margin:16px 0 7px}.side input[type=text],.side select{width:100%;background:#203750;border:1px solid #3c526c;color:#fff;padding:11px;border-radius:9px;outline:none}.side input::placeholder{color:#a4b5c7}.toggle{display:flex;gap:10px;align-items:center;margin:14px 0;color:#e7edf4;cursor:pointer}.toggle input{accent-color:var(--gold);width:16px;height:16px}.sidefoot{margin-top:auto;padding:18px 20px;border-top:1px solid #ffffff20;color:#aab8cb;font-size:12px}.main{display:flex;flex-direction:column;min-width:0;min-height:0}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:19px 25px;background:white;border-bottom:1px solid var(--border)}.top h1{margin:0;font-size:22px}.top p{margin:3px 0 0;color:var(--muted);font-size:12px}.pill{border-radius:30px;background:#eef9f2;color:#207645;padding:7px 12px;font-weight:650;font-size:12px}.content{display:flex;flex-direction:column;gap:16px;padding:18px 24px 22px;min-height:0;flex:1}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.stat{background:white;border:1px solid var(--border);border-radius:13px;padding:15px 17px;box-shadow:0 3px 12px #14243a07}.stat .name{font-size:12px;color:var(--muted)}.stat .value{font-size:29px;font-weight:750;margin-top:4px}.stat .note{font-size:11px;color:#8593a5}.mapwrap{position:relative;flex:1;min-height:320px;background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 5px 22px #14243a0c}#map{width:100%;height:100%}.maphead{position:absolute;z-index:600;top:13px;left:13px;pointer-events:none;background:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 2px 14px #0002;font-size:12px}.maphead strong{display:block;font-size:14px}.legend{background:#fff;padding:12px 15px;border-radius:10px;box-shadow:0 2px 12px #0002;line-height:24px}.swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:middle}.dot{border-radius:50%}.status{color:var(--muted);font-size:12px}.leaflet-popup-content{line-height:1.65}.leaflet-popup-content strong{font-size:14px}@media(max-width:900px){.shell{grid-template-columns:230px minmax(0,1fr)}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.content{padding:12px}}@media(max-width:640px){.shell{display:block;height:auto}.side{min-height:auto}.sidebody{padding:12px 18px}.sidefoot{display:none}.main{height:75vh;min-height:580px}.top{padding:14px}.top h1{font-size:17px}.content{gap:9px}.stat{padding:9px}.stat .value{font-size:22px}.maphead{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="side"><div class="brand"><div class="mark">A</div><div><strong>AKHARI GeoLake</strong><small>Geospatial Intelligence</small></div></div>
+<div class="sidebody"><div class="section">Workspace</div><div class="navitem">◈ &nbsp; WebGIS Dashboard</div><div class="section">Filter Data</div>
+<label class="field" for="search">Cari nama fasilitas</label><input id="search" type="text" placeholder="Ketik nama fasilitas...">
+<label class="field" for="district">Kecamatan</label><select id="district"><option value="">Semua kecamatan</option></select>
+<label class="field" for="kind">Jenis fasilitas</label><select id="kind"><option value="">Semua jenis</option></select>
+<label class="field" for="quality">Status spasial</label><select id="quality"><option value="">Semua status</option><option>DALAM WILAYAH</option><option>PERLU VERIFIKASI</option><option>DI LUAR WILAYAH</option></select>
+<div class="section" style="margin-top:26px">Layer Peta</div><label class="toggle"><input id="showPoints" type="checkbox" checked> Titik fasilitas kesehatan</label><label class="toggle"><input id="showVillages" type="checkbox" checked> Batas 105 desa</label><label class="toggle"><input id="showDistricts" type="checkbox" checked> Tematik 8 kecamatan</label>
+</div><div class="sidefoot">● Data PostGIS lokal<br>Data fasilitas yang telah diinput, bukan sensus resmi.</div></aside>
+<main class="main"><header class="top"><div><h1>Dashboard Geospasial</h1><p>Analisis fasilitas kesehatan · Kabupaten Nias Barat</p></div><div class="pill" id="connection">Menghubungkan API...</div></header>
+<div class="content"><section class="stats"><div class="stat"><div class="name">Total fasilitas</div><div class="value" id="sTotal">—</div><div class="note">Tercatat di database</div></div><div class="stat"><div class="name">Kecamatan</div><div class="value" id="sDistricts">—</div><div class="note">Wilayah administrasi</div></div><div class="stat"><div class="name">Desa</div><div class="value" id="sVillages">—</div><div class="note">Polygon batas desa</div></div><div class="stat"><div class="name">Kecocokan spasial</div><div class="value" id="sMatched">—</div><div class="note" id="sReview">Menunggu data</div></div></section>
+<section class="mapwrap"><div class="maphead"><strong>Peta Distribusi Fasilitas</strong><span class="status" id="visibleCount">Memuat data...</span></div><div id="map"></div></section><div class="status" id="message">Mengambil data dari AKHARI GeoLake API...</div></div></main>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+'use strict';
+const map=L.map('map',{preferCanvas:true}).setView([1.05,97.49],11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+map.createPane('districtPane');map.getPane('districtPane').style.zIndex=350;
+map.createPane('villagePane');map.getPane('villagePane').style.zIndex=390;
+map.createPane('pointPane');map.getPane('pointPane').style.zIndex=450;
+const el=id=>document.getElementById(id);
+const safe=v=>String(v??'-').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const statusColor=s=>s==='DALAM WILAYAH'?'#16a34a':s==='PERLU VERIFIKASI'?'#f59e0b':'#dc2626';
+const districtColor=n=>n<=2?'#fde68a':n<=4?'#f59e0b':'#b45309';
+let facilities=[],districtData=null,villageData=null,pointLayer=null,villageLayer=null,districtLayer=null;
+const legend=L.control({position:'bottomright'});legend.onAdd=()=>{const div=L.DomUtil.create('div','legend');div.innerHTML='<b>Jumlah fasilitas / kecamatan</b><br><span class="swatch" style="background:#fde68a"></span>1–2 fasilitas<br><span class="swatch" style="background:#f59e0b"></span>3–4 fasilitas<br><span class="swatch" style="background:#b45309"></span>5+ fasilitas<hr style="border:0;border-top:1px solid #e5e7eb"><span class="swatch dot" style="background:#16a34a"></span>Dalam wilayah<br><span class="swatch dot" style="background:#f59e0b"></span>Perlu verifikasi<br><span class="swatch dot" style="background:#dc2626"></span>Di luar wilayah';return div};legend.addTo(map);
+async function fetchJSON(url){const r=await fetch(url);if(!r.ok)throw new Error(url+' HTTP '+r.status);return r.json()}
+function refresh(){const q=el('search').value.trim().toLocaleLowerCase('id');const district=el('district').value,kind=el('kind').value,quality=el('quality').value;
+const matches=facilities.filter(f=>{const p=f.properties||{};return (!q||String(p.nama||'').toLocaleLowerCase('id').includes(q))&&(!district||p.kecamatan===district)&&(!kind||p.jenis===kind)&&(!quality||p.status_spasial===quality)});
+if(pointLayer)map.removeLayer(pointLayer);
+pointLayer=L.geoJSON({type:'FeatureCollection',features:matches},{pane:'pointPane',pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:'pointPane',radius:7,weight:2,color:'#fff',fillColor:statusColor(f.properties.status_spasial),fillOpacity:1}),onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup('<strong>'+safe(p.nama)+'</strong><hr>Jenis: '+safe(p.jenis)+'<br>Desa: '+safe(p.desa)+'<br>Kecamatan: '+safe(p.kecamatan)+'<br>Status: '+safe(p.status_spasial))}});
+if(el('showPoints').checked)pointLayer.addTo(map);
+el('visibleCount').textContent=matches.length+' dari '+facilities.length+' titik fasilitas ditampilkan';
+if(villageLayer){el('showVillages').checked?map.addLayer(villageLayer):map.removeLayer(villageLayer)}
+if(districtLayer){el('showDistricts').checked?map.addLayer(districtLayer):map.removeLayer(districtLayer)}
+}
+function addOptions(id,values){const sel=el(id);[...new Set(values.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id')).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o)})}
+async function init(){try{const [dash,points,villages,districts]=await Promise.all([fetchJSON('/api/dashboard'),fetchJSON('/api/fasilitas/geojson'),fetchJSON('/api/wilayah/desa'),fetchJSON('/api/wilayah/kecamatan')]);
+facilities=points.features||[];villageData=villages;districtData=districts;
+el('sTotal').textContent=dash.total_fasilitas??facilities.length;el('sDistricts').textContent=districts.features.length;el('sVillages').textContent=villages.features.length;el('sMatched').textContent=(dash.persentase_terpetakan??0)+'%';el('sReview').textContent=(dash.perlu_verifikasi??0)+' perlu verifikasi';
+addOptions('district',districts.features.map(f=>f.properties.kecamatan));addOptions('kind',facilities.map(f=>f.properties.jenis));
+districtLayer=L.geoJSON(districtData,{pane:'districtPane',style:f=>({color:'#8a6115',weight:2,fillColor:districtColor(Number(f.properties.total_fasilitas||0)),fillOpacity:.36}),onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup('<strong>Kecamatan '+safe(p.kecamatan)+'</strong><hr>Total fasilitas: '+safe(p.total_fasilitas)+'<br>Puskesmas: '+safe(p.puskesmas)+'<br>Pustu: '+safe(p.pustu)+'<br>Poskesdes: '+safe(p.poskesdes))}});
+villageLayer=L.geoJSON(villageData,{pane:'villagePane',style:{color:'#475569',weight:.8,fillOpacity:0,opacity:.6},onEachFeature:(f,l)=>l.bindPopup('<strong>Desa '+safe(f.properties.desa)+'</strong><br>Kecamatan: '+safe(f.properties.kecamatan))});
+const bounds=districtLayer.getBounds();if(bounds.isValid())map.fitBounds(bounds,{padding:[18,18]});
+refresh();el('connection').textContent='● API terhubung';el('message').textContent='Data live dari PostGIS · Titik oranye memerlukan verifikasi lokasi';setTimeout(()=>map.invalidateSize(),100);
+}catch(err){console.error(err);el('connection').textContent='● API bermasalah';el('message').textContent='Gagal memuat data: '+err.message+' — pastikan Uvicorn aktif dan endpoint API tersedia.'}}
+['search','district','kind','quality','showPoints','showVillages','showDistricts'].forEach(id=>el(id).addEventListener(id==='search'?'input':'change',refresh));init();
+</script>
+</body></html>
