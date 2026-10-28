@@ -29,9 +29,8 @@ BEGIN
     lat := btrim(parts[1])::DOUBLE PRECISION;
     lon := btrim(parts[2])::DOUBLE PRECISION;
 
-    IF NOT isfinite(lat) OR NOT isfinite(lon)
-       OR lat NOT BETWEEN -90 AND 90
-       OR lon NOT BETWEEN -180 AND 180 THEN
+    IF NOT (lat BETWEEN -90 AND 90)
+    OR NOT (lon BETWEEN -180 AND 180) THEN
         RAISE EXCEPTION 'Koordinat tidak valid';
     END IF;
 
