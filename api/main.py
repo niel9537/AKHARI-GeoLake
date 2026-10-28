@@ -244,3 +244,68 @@ def geojson_akses_faskes_desa():
             status_code=503,
             detail="Gagal membaca analisis akses fasilitas kesehatan"
         )
+
+
+@app.get("/api/analisis/prioritas-desa")
+def daftar_prioritas_desa(
+    kecamatan: str | None = None,
+    kategori: str | None = None,
+    limit: int = 105
+):
+    if not 1 <= limit <= 105:
+        raise HTTPException(
+            status_code=422,
+            detail="Limit harus antara 1 dan 105"
+        )
+
+    try:
+        with get_connection() as conn:
+            rows = conn.execute("""
+                SELECT
+                    peringkat,
+                    id_desa,
+                    desa,
+                    kecamatan,
+                    fasilitas_terdekat,
+                    jenis_fasilitas,
+                    jarak_meter,
+                    kategori_jarak,
+                    tingkat_prioritas,
+                    label_prioritas
+                FROM v_prioritas_akses_faskes_desa
+                WHERE
+                     (%s::text IS NULL OR kecamatan = %s)
+                     AND
+                     (%s::text IS NULL OR kategori_jarak = %s)
+                ORDER BY peringkat
+                LIMIT %s
+            """, (
+                kecamatan, kecamatan,
+                kategori, kategori,
+                limit
+            )).fetchall()
+
+        return {
+            "total_ditampilkan": len(rows),
+            "filter": {
+                "kecamatan": kecamatan,
+                "kategori": kategori
+            },
+            "data": [
+                {
+                    **dict(row),
+                    "jarak_meter": (
+                        float(row["jarak_meter"])
+                        if row["jarak_meter"] is not None
+                        else None
+                    )
+                }
+                for row in rows
+            ]
+        }
+
+    except psycopg.Error:
+        raise HTTPException(
+            status_code=503,
+            detail="Gagal membaca data prioritas desa"
+        )
