@@ -1,20 +1,43 @@
 
+import logging
 import os
+
 from contextlib import contextmanager
+from pathlib import Path
 
 import psycopg
+
 from psycopg.rows import dict_row
 from dotenv import load_dotenv
+
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+
+# ==========================================
+# CONFIGURATION
+# ==========================================
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger("akhari.geolake")
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 app = FastAPI(
     title="AKHARI GeoLake API",
-    description="API geospasial dan analisis pembangunan daerah",
-    version="0.1.0",
+    description=(
+        "API geospasial, analisis akses kesehatan, "
+        "rekomendasi, dan monitoring pembangunan daerah"
+    ),
+    version="0.1.1",
 )
 
+
+# ==========================================
+# DATABASE CONNECTION
+# ==========================================
 
 @contextmanager
 def get_connection():
@@ -30,10 +53,47 @@ def get_connection():
         yield conn
 
 
+# ==========================================
+# MONITORING ROUTER
+# ==========================================
+
+from api.monitoring_router import router as monitoring_router
+
+app.include_router(monitoring_router)
+
+
+# ==========================================
+# HEALTH CHECK
+# ==========================================
+
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "service": "AKHARI GeoLake"}
+    return {
+        "status": "ok",
+        "service": "AKHARI GeoLake",
+    }
 
+
+# ==========================================
+# WEBGIS FRONTEND
+# ==========================================
+
+@app.get("/", include_in_schema=False)
+def webgis_home():
+    index_file = PROJECT_ROOT / "web" / "index.html"
+
+    if not index_file.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail="File web/index.html tidak ditemukan",
+        )
+
+    return FileResponse(index_file)
+
+
+# ==========================================
+# DASHBOARD
+# ==========================================
 
 @app.get("/api/dashboard")
 def dashboard():
@@ -52,17 +112,24 @@ def dashboard():
         return result
 
     except psycopg.Error:
+        logger.exception("Gagal membaca dashboard")
+
         raise HTTPException(
             status_code=503,
             detail="Database tidak dapat diakses",
         )
 
 
+# ==========================================
+# FACILITY GEOJSON
+# ==========================================
+
 @app.get("/api/fasilitas/geojson")
 def fasilitas_geojson():
     try:
         with get_connection() as conn:
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT
                     id,
                     nama,
@@ -75,7 +142,8 @@ def fasilitas_geojson():
                 FROM v_fasilitas_kesehatan_spasial
                 WHERE geom IS NOT NULL
                 ORDER BY id
-            """).fetchall()
+                """
+            ).fetchall()
 
         features = []
 
@@ -91,7 +159,7 @@ def fasilitas_geojson():
                     "desa": row["desa"],
                     "kecamatan": row["kecamatan"],
                     "status_spasial": row["status_spasial"],
-                }
+                },
             })
 
         return {
@@ -100,27 +168,24 @@ def fasilitas_geojson():
         }
 
     except psycopg.Error:
+        logger.exception("Gagal membaca fasilitas")
+
         raise HTTPException(
             status_code=503,
-            detail="Database tidak dapat diakses",
+            detail="Gagal membaca fasilitas kesehatan",
         )
 
 
-from pathlib import Path
-from fastapi.responses import FileResponse
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-@app.get("/", include_in_schema=False)
-def webgis_home():
-    return FileResponse(PROJECT_ROOT / "web" / "index.html")
-
+# ==========================================
+# VILLAGE GEOJSON
+# ==========================================
 
 @app.get("/api/wilayah/desa")
 def geojson_desa():
     try:
         with get_connection() as conn:
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT
                     "OBJECTID" AS id,
                     "WADMKD" AS desa,
@@ -129,36 +194,45 @@ def geojson_desa():
                 FROM batas_desa_nias_barat
                 WHERE geom IS NOT NULL
                 ORDER BY "OBJECTID"
-            """).fetchall()
+                """
+            ).fetchall()
 
         return {
             "type": "FeatureCollection",
             "features": [
                 {
                     "type": "Feature",
-                    "id": r["id"],
-                    "geometry": r["geometry"],
+                    "id": row["id"],
+                    "geometry": row["geometry"],
                     "properties": {
-                        "desa": r["desa"],
-                        "kecamatan": r["kecamatan"]
-                    }
+                        "id_desa": row["id"],
+                        "desa": row["desa"],
+                        "kecamatan": row["kecamatan"],
+                    },
                 }
-                for r in rows
-            ]
+                for row in rows
+            ],
         }
 
     except psycopg.Error:
+        logger.exception("Gagal membaca desa")
+
         raise HTTPException(
             status_code=503,
-            detail="Gagal membaca polygon desa"
+            detail="Gagal membaca polygon desa",
         )
 
+
+# ==========================================
+# DISTRICT GEOJSON
+# ==========================================
 
 @app.get("/api/wilayah/kecamatan")
 def geojson_kecamatan():
     try:
         with get_connection() as conn:
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT
                     id,
                     kecamatan,
@@ -169,39 +243,47 @@ def geojson_kecamatan():
                     ST_AsGeoJSON(geom)::json AS geometry
                 FROM v_peta_faskes_kecamatan
                 ORDER BY kecamatan
-            """).fetchall()
+                """
+            ).fetchall()
 
         return {
             "type": "FeatureCollection",
             "features": [
                 {
                     "type": "Feature",
-                    "id": r["id"],
-                    "geometry": r["geometry"],
+                    "id": row["id"],
+                    "geometry": row["geometry"],
                     "properties": {
-                        "kecamatan": r["kecamatan"],
-                        "total_fasilitas": r["total_fasilitas"],
-                        "puskesmas": r["puskesmas"],
-                        "pustu": r["pustu"],
-                        "poskesdes": r["poskesdes"]
-                    }
+                        "kecamatan": row["kecamatan"],
+                        "total_fasilitas": row["total_fasilitas"],
+                        "puskesmas": row["puskesmas"],
+                        "pustu": row["pustu"],
+                        "poskesdes": row["poskesdes"],
+                    },
                 }
-                for r in rows
-            ]
+                for row in rows
+            ],
         }
 
     except psycopg.Error:
+        logger.exception("Gagal membaca kecamatan")
+
         raise HTTPException(
             status_code=503,
-            detail="Gagal membaca polygon kecamatan"
+            detail="Gagal membaca polygon kecamatan",
         )
 
+
+# ==========================================
+# ACCESS ANALYSIS GEOJSON
+# ==========================================
 
 @app.get("/api/analisis/akses-desa")
 def geojson_akses_faskes_desa():
     try:
         with get_connection() as conn:
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT
                     id,
                     desa,
@@ -215,52 +297,73 @@ def geojson_akses_faskes_desa():
                 FROM v_peta_akses_faskes_desa
                 WHERE geom IS NOT NULL
                 ORDER BY kecamatan, desa, id
-            """).fetchall()
+                """
+            ).fetchall()
 
         return {
             "type": "FeatureCollection",
             "features": [
                 {
                     "type": "Feature",
-                    "id": r["id"],
-                    "geometry": r["geometry"],
+                    "id": row["id"],
+                    "geometry": row["geometry"],
                     "properties": {
-                        "desa": r["desa"],
-                        "kecamatan": r["kecamatan"],
-                        "fasilitas_terdekat": r["fasilitas_terdekat"],
-                        "jenis_fasilitas": r["jenis_fasilitas"],
-                        "jarak_meter": float(r["jarak_meter"])
-                        if r["jarak_meter"] is not None else None,
-                        "kategori_jarak": r["kategori_jarak"],
-                        "warna_hex": r["warna_hex"]
-                    }
+                        "id_desa": row["id"],
+                        "desa": row["desa"],
+                        "kecamatan": row["kecamatan"],
+                        "fasilitas_terdekat": (
+                            row["fasilitas_terdekat"]
+                        ),
+                        "jenis_fasilitas": (
+                            row["jenis_fasilitas"]
+                        ),
+                        "jarak_meter": (
+                            float(row["jarak_meter"])
+                            if row["jarak_meter"] is not None
+                            else None
+                        ),
+                        "kategori_jarak": (
+                            row["kategori_jarak"]
+                        ),
+                        "warna_hex": row["warna_hex"],
+                    },
                 }
-                for r in rows
-            ]
+                for row in rows
+            ],
         }
 
     except psycopg.Error:
+        logger.exception("Gagal membaca analisis akses")
+
         raise HTTPException(
             status_code=503,
-            detail="Gagal membaca analisis akses fasilitas kesehatan"
+            detail=(
+                "Gagal membaca analisis akses "
+                "fasilitas kesehatan"
+            ),
         )
 
+
+# ==========================================
+# PRIORITY VILLAGES
+# ==========================================
 
 @app.get("/api/analisis/prioritas-desa")
 def daftar_prioritas_desa(
     kecamatan: str | None = None,
     kategori: str | None = None,
-    limit: int = 105
+    limit: int = 105,
 ):
     if not 1 <= limit <= 105:
         raise HTTPException(
             status_code=422,
-            detail="Limit harus antara 1 dan 105"
+            detail="Limit harus antara 1 dan 105",
         )
 
     try:
         with get_connection() as conn:
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT
                     peringkat,
                     id_desa,
@@ -274,38 +377,163 @@ def daftar_prioritas_desa(
                     label_prioritas
                 FROM v_prioritas_akses_faskes_desa
                 WHERE
-                     (%s::text IS NULL OR kecamatan = %s)
-                     AND
-                     (%s::text IS NULL OR kategori_jarak = %s)
+                    (
+                        %s::text IS NULL
+                        OR kecamatan = %s
+                    )
+                    AND
+                    (
+                        %s::text IS NULL
+                        OR kategori_jarak = %s
+                    )
                 ORDER BY peringkat
                 LIMIT %s
-            """, (
-                kecamatan, kecamatan,
-                kategori, kategori,
-                limit
-            )).fetchall()
+                """,
+                (
+                    kecamatan,
+                    kecamatan,
+                    kategori,
+                    kategori,
+                    limit,
+                ),
+            ).fetchall()
+
+        data = []
+
+        for row in rows:
+            item = dict(row)
+
+            if item["jarak_meter"] is not None:
+                item["jarak_meter"] = float(
+                    item["jarak_meter"]
+                )
+
+            data.append(item)
 
         return {
-            "total_ditampilkan": len(rows),
+            "total_ditampilkan": len(data),
             "filter": {
                 "kecamatan": kecamatan,
-                "kategori": kategori
+                "kategori": kategori,
             },
-            "data": [
-                {
-                    **dict(row),
-                    "jarak_meter": (
-                        float(row["jarak_meter"])
-                        if row["jarak_meter"] is not None
-                        else None
-                    )
-                }
-                for row in rows
-            ]
+            "data": data,
         }
 
     except psycopg.Error:
+        logger.exception("Gagal membaca prioritas desa")
+
         raise HTTPException(
             status_code=503,
-            detail="Gagal membaca data prioritas desa"
+            detail="Gagal membaca data prioritas desa",
+        )
+
+
+# ==========================================
+# VILLAGE RECOMMENDATIONS
+# NEW ENDPOINT — MODULE 4.4.55 FIX
+# ==========================================
+
+@app.get("/api/analisis/rekomendasi-desa")
+def daftar_rekomendasi_desa(
+    kecamatan: str | None = None,
+    kategori: str | None = None,
+    limit: int = 105,
+):
+    """
+    Return preliminary recommendations for village
+    healthcare accessibility.
+
+    Recommendations are based on straight-line
+    distances and require field verification.
+    """
+
+    if not 1 <= limit <= 105:
+        raise HTTPException(
+            status_code=422,
+            detail="Limit harus antara 1 dan 105",
+        )
+
+    try:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    peringkat,
+                    id_desa,
+                    desa,
+                    kecamatan,
+                    fasilitas_terdekat,
+                    jenis_fasilitas,
+                    jarak_meter,
+                    kategori_jarak,
+                    tingkat_prioritas,
+                    label_prioritas,
+                    kategori_rekomendasi,
+                    alasan_rekomendasi,
+                    tindak_lanjut,
+                    opd_terkait,
+                    status_rekomendasi
+                FROM v_rekomendasi_akses_faskes_desa
+                WHERE
+                    (
+                        %s::text IS NULL
+                        OR kecamatan = %s
+                    )
+                    AND
+                    (
+                        %s::text IS NULL
+                        OR kategori_jarak = %s
+                    )
+                ORDER BY peringkat
+                LIMIT %s
+                """,
+                (
+                    kecamatan,
+                    kecamatan,
+                    kategori,
+                    kategori,
+                    limit,
+                ),
+            ).fetchall()
+
+        data = []
+
+        for row in rows:
+            item = dict(row)
+
+            if item["jarak_meter"] is not None:
+                item["jarak_meter"] = float(
+                    item["jarak_meter"]
+                )
+
+            data.append(item)
+
+        return {
+            "status": "success",
+            "total_ditampilkan": len(data),
+            "filter": {
+                "kecamatan": kecamatan,
+                "kategori": kategori,
+            },
+            "catatan": (
+                "Rekomendasi merupakan hasil analisis "
+                "awal berbasis jarak garis lurus "
+                "dan memerlukan validasi lebih lanjut."
+            ),
+            "data": data,
+        }
+
+    except psycopg.Error:
+        logger.exception(
+            "Gagal membaca rekomendasi desa"
+        )
+
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Gagal membaca data rekomendasi desa. "
+                "Pastikan view "
+                "v_rekomendasi_akses_faskes_desa "
+                "sudah tersedia."
+            ),
         )
