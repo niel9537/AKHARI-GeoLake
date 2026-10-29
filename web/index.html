@@ -1,61 +1,1907 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AKHARI GeoLake — WebGIS</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<style>
-:root{--navy:#13243b;--gold:#ffca21;--bg:#f3f6fa;--muted:#65758b;--border:#e3e9f0}*{box-sizing:border-box}body{margin:0;font:14px/1.5 Inter,Segoe UI,Arial,sans-serif;color:#15263c;background:var(--bg)}.shell{display:grid;grid-template-columns:292px minmax(0,1fr);height:100vh}.side{background:var(--navy);color:white;display:flex;flex-direction:column;min-height:0}.brand{padding:24px 20px;border-bottom:1px solid #ffffff20;display:flex;gap:12px;align-items:center}.mark{width:42px;height:42px;background:var(--gold);border-radius:13px;display:grid;place-items:center;color:var(--navy);font-size:23px;font-weight:900}.brand strong{font-size:19px;letter-spacing:.2px}.brand small{display:block;color:#aab8cb}.sidebody{padding:20px;overflow:auto}.section{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:#94a9c0;margin:12px 0}.navitem{padding:11px 13px;border-radius:10px;background:#ffffff12;border-left:3px solid var(--gold);font-weight:650;margin-bottom:24px}.field{display:block;font-size:12px;color:#c5d1df;margin:16px 0 7px}.side input[type=text],.side select{width:100%;background:#203750;border:1px solid #3c526c;color:#fff;padding:11px;border-radius:9px;outline:none}.side input::placeholder{color:#a4b5c7}.toggle{display:flex;gap:10px;align-items:center;margin:14px 0;color:#e7edf4;cursor:pointer}.toggle input{accent-color:var(--gold);width:16px;height:16px}.sidefoot{margin-top:auto;padding:18px 20px;border-top:1px solid #ffffff20;color:#aab8cb;font-size:12px}.main{display:flex;flex-direction:column;min-width:0;min-height:0}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:19px 25px;background:white;border-bottom:1px solid var(--border)}.top h1{margin:0;font-size:22px}.top p{margin:3px 0 0;color:var(--muted);font-size:12px}.pill{border-radius:30px;background:#eef9f2;color:#207645;padding:7px 12px;font-weight:650;font-size:12px}.content{display:flex;flex-direction:column;gap:16px;padding:18px 24px 22px;min-height:0;flex:1}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.stat{background:white;border:1px solid var(--border);border-radius:13px;padding:15px 17px;box-shadow:0 3px 12px #14243a07}.stat .name{font-size:12px;color:var(--muted)}.stat .value{font-size:29px;font-weight:750;margin-top:4px}.stat .note{font-size:11px;color:#8593a5}.mapwrap{position:relative;flex:1;min-height:320px;background:white;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 5px 22px #14243a0c}#map{width:100%;height:100%}.maphead{position:absolute;z-index:600;top:13px;left:13px;pointer-events:none;background:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 2px 14px #0002;font-size:12px}.maphead strong{display:block;font-size:14px}.legend{background:#fff;padding:12px 15px;border-radius:10px;box-shadow:0 2px 12px #0002;line-height:24px}.swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:middle}.dot{border-radius:50%}.status{color:var(--muted);font-size:12px}.leaflet-popup-content{line-height:1.65}.leaflet-popup-content strong{font-size:14px}@media(max-width:900px){.shell{grid-template-columns:230px minmax(0,1fr)}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.content{padding:12px}}@media(max-width:640px){.shell{display:block;height:auto}.side{min-height:auto}.sidebody{padding:12px 18px}.sidefoot{display:none}.main{height:75vh;min-height:580px}.top{padding:14px}.top h1{font-size:17px}.content{gap:9px}.stat{padding:9px}.stat .value{font-size:22px}.maphead{display:none}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AKHARI GeoLake — WebGIS Dashboard</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+
+  <style>
+    :root {
+      --navy: #13243b;
+      --navy-light: #203750;
+      --gold: #ffca21;
+      --bg: #f3f6fa;
+      --white: #fff;
+      --text: #15263c;
+      --muted: #64748b;
+      --border: #e3e9f0;
+      --green: #16a34a;
+      --orange: #f59e0b;
+      --red: #dc2626;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    [hidden] { display: none !important; }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+
+    .sidebar {
+      background: var(--navy);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 23px 20px;
+      border-bottom: 1px solid #ffffff20;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      border-radius: 13px;
+      background: var(--gold);
+      color: var(--navy);
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .brand-title { font-size: 18px; font-weight: 800; }
+    .brand-subtitle { color: #aab8cb; font-size: 11px; }
+    .sidebar-body { padding: 20px; }
+
+    .sidebar-heading {
+      margin: 25px 0 12px;
+      color: #94a9c0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+    }
+
+    .sidebar-heading:first-child { margin-top: 0; }
+
+    .nav-item {
+      padding: 12px;
+      border-left: 3px solid var(--gold);
+      border-radius: 8px;
+      background: #ffffff12;
+      font-weight: 700;
+    }
+
+    .field-label {
+      display: block;
+      margin: 14px 0 7px;
+      color: #c5d1df;
+      font-size: 12px;
+    }
+
+    .sidebar input[type="search"],
+    .sidebar select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #3c526c;
+      border-radius: 9px;
+      background: var(--navy-light);
+      color: #fff;
+      outline: none;
+    }
+
+    .sidebar input::placeholder { color: #a4b5c7; }
+
+    .toggle {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 13px 0;
+      cursor: pointer;
+    }
+
+    .toggle input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--gold);
+    }
+
+    .sidebar-note {
+      margin-top: 12px;
+      color: #b7c7d9;
+      font-size: 11px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 18px 20px;
+      border-top: 1px solid #ffffff20;
+      color: #aab8cb;
+      font-size: 11px;
+    }
+
+    /* MAIN */
+
+    .main { min-width: 0; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 20px 26px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar h1 { margin: 0; font-size: 23px; }
+
+    .topbar p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .connection {
+      padding: 8px 13px;
+      border-radius: 30px;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .connection.connected {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .connection.error {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 22px 26px;
+    }
+
+    /* STATISTICS */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat-card,
+    .panel {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      box-shadow: 0 4px 20px #13243b0b;
+    }
+
+    .stat-card { padding: 18px; }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { margin-top: 5px; font-size: 30px; font-weight: 800; }
+    .stat-note { color: #8593a5; font-size: 11px; }
+
+    /* MAP */
+
+    .map-card { overflow: hidden; }
+
+    .map-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .map-toolbar h2 { margin: 0; font-size: 16px; }
+
+    .map-toolbar span,
+    .map-message {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    #map {
+      width: 100%;
+      height: 510px;
+      background: #e2e8f0;
+    }
+
+    .map-message {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .legend {
+      padding: 12px 15px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 2px 12px #0002;
+      line-height: 24px;
+      font-size: 12px;
+    }
+
+    .legend strong { display: block; margin-bottom: 5px; }
+
+    .swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 8px;
+      border-radius: 3px;
+      vertical-align: middle;
+    }
+
+    .swatch.circle { border-radius: 50%; }
+
+    /* PANELS */
+
+    .panel { padding: 22px; }
+
+    .panel-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .section-kicker {
+      color: #a87900;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    .panel-heading h2 {
+      margin: 6px 0;
+      color: var(--navy);
+      font-size: 20px;
+    }
+
+    .panel-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .gold-button {
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    .gold-button:hover:not(:disabled) { background: #efb900; }
+
+    .dark-button {
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 7px;
+      background: var(--navy);
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .dark-button:hover { background: #284a70; }
+
+    .panel-filters {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .panel-filters input,
+    .panel-filters select,
+    .recommendation-selector select {
+      width: 100%;
+      min-width: 0;
+      padding: 11px 13px;
+      border: 1px solid #dbe3ed;
+      border-radius: 9px;
+      background: #f8fafc;
+      color: var(--navy);
+    }
+
+    .panel-toolbar {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 17px 0 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .priority-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .priority-table th {
+      padding: 14px;
+      background: #f4f7fb;
+      color: #475569;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .priority-table td {
+      padding: 13px 14px;
+      border-top: 1px solid #edf1f5;
+      color: #334155;
+    }
+
+    .priority-table tbody tr:hover { background: #fffbeb; }
+
+    .priority-badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .priority-level-1 { background: #fee2e2; color: #b91c1c; }
+    .priority-level-2 { background: #ffedd5; color: #c2410c; }
+    .priority-level-3 { background: #fef3c7; color: #92400e; }
+    .priority-level-4 { background: #dcfce7; color: #166534; }
+    .priority-level-unknown { background: #e2e8f0; color: #475569; }
+
+    .disclaimer {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    /* RECOMMENDATION */
+
+    .recommendation-label {
+      padding: 7px 12px;
+      border-radius: 20px;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .recommendation-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 22px 0;
+    }
+
+    .recommendation-selector label {
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .recommendation-selector select { max-width: 480px; }
+
+    .recommendation-empty {
+      padding: 36px 20px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      background: #f8fafc;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .recommendation-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .recommendation-summary > div {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .recommendation-summary span,
+    .recommendation-footer span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .recommendation-summary strong {
+      color: var(--navy);
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .recommendation-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .recommendation-card {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--gold);
+      border-radius: 12px;
+    }
+
+    .recommendation-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    .recommendation-card-title span {
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: #fff5cf;
+      color: #926900;
+      font-size: 11px;
+    }
+
+    .recommendation-card p {
+      margin: 12px 0 0;
+      color: #475569;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .recommendation-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 18px;
+      padding: 17px;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .recommendation-footer > div {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .recommendation-footer strong { color: var(--navy); }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 240px minmax(0, 1fr); }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .recommendation-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .shell { display: block; }
+      .sidebar-footer { display: none; }
+      .sidebar-body { padding: 15px 18px; }
+      .topbar, .content { padding: 15px; }
+      .panel { padding: 15px; }
+      .panel-filters { grid-template-columns: 1fr; }
+      .priority-table { min-width: 680px; }
+      .recommendation-summary,
+      .recommendation-grid { grid-template-columns: 1fr; }
+      #map { height: 420px; }
+    }
+  </style>
 </head>
+
 <body>
-<div class="shell">
-<aside class="side"><div class="brand"><div class="mark">A</div><div><strong>AKHARI GeoLake</strong><small>Geospatial Intelligence</small></div></div>
-<div class="sidebody"><div class="section">Workspace</div><div class="navitem">◈ &nbsp; WebGIS Dashboard</div><div class="section">Filter Data</div>
-<label class="field" for="search">Cari nama fasilitas</label><input id="search" type="text" placeholder="Ketik nama fasilitas...">
-<label class="field" for="district">Kecamatan</label><select id="district"><option value="">Semua kecamatan</option></select>
-<label class="field" for="kind">Jenis fasilitas</label><select id="kind"><option value="">Semua jenis</option></select>
-<label class="field" for="quality">Status spasial</label><select id="quality"><option value="">Semua status</option><option>DALAM WILAYAH</option><option>PERLU VERIFIKASI</option><option>DI LUAR WILAYAH</option></select>
-<div class="section" style="margin-top:26px">Layer Peta</div><label class="toggle"><input id="showPoints" type="checkbox" checked> Titik fasilitas kesehatan</label><label class="toggle"><input id="showVillages" type="checkbox" checked> Batas 105 desa</label><label class="toggle"><input id="showDistricts" type="checkbox" checked> Tematik 8 kecamatan</label>
-</div><div class="sidefoot">● Data PostGIS lokal<br>Data fasilitas yang telah diinput, bukan sensus resmi.</div></aside>
-<main class="main"><header class="top"><div><h1>Dashboard Geospasial</h1><p>Analisis fasilitas kesehatan · Kabupaten Nias Barat</p></div><div class="pill" id="connection">Menghubungkan API...</div></header>
-<div class="content"><section class="stats"><div class="stat"><div class="name">Total fasilitas</div><div class="value" id="sTotal">—</div><div class="note">Tercatat di database</div></div><div class="stat"><div class="name">Kecamatan</div><div class="value" id="sDistricts">—</div><div class="note">Wilayah administrasi</div></div><div class="stat"><div class="name">Desa</div><div class="value" id="sVillages">—</div><div class="note">Polygon batas desa</div></div><div class="stat"><div class="name">Kecocokan spasial</div><div class="value" id="sMatched">—</div><div class="note" id="sReview">Menunggu data</div></div></section>
-<section class="mapwrap"><div class="maphead"><strong>Peta Distribusi Fasilitas</strong><span class="status" id="visibleCount">Memuat data...</span></div><div id="map"></div></section><div class="status" id="message">Mengambil data dari AKHARI GeoLake API...</div></div></main>
-</div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-'use strict';
-const map=L.map('map',{preferCanvas:true}).setView([1.05,97.49],11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
-map.createPane('districtPane');map.getPane('districtPane').style.zIndex=350;
-map.createPane('villagePane');map.getPane('villagePane').style.zIndex=390;
-map.createPane('pointPane');map.getPane('pointPane').style.zIndex=450;
-const el=id=>document.getElementById(id);
-const safe=v=>String(v??'-').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const statusColor=s=>s==='DALAM WILAYAH'?'#16a34a':s==='PERLU VERIFIKASI'?'#f59e0b':'#dc2626';
-const districtColor=n=>n<=2?'#fde68a':n<=4?'#f59e0b':'#b45309';
-let facilities=[],districtData=null,villageData=null,pointLayer=null,villageLayer=null,districtLayer=null;
-const legend=L.control({position:'bottomright'});legend.onAdd=()=>{const div=L.DomUtil.create('div','legend');div.innerHTML='<b>Jumlah fasilitas / kecamatan</b><br><span class="swatch" style="background:#fde68a"></span>1–2 fasilitas<br><span class="swatch" style="background:#f59e0b"></span>3–4 fasilitas<br><span class="swatch" style="background:#b45309"></span>5+ fasilitas<hr style="border:0;border-top:1px solid #e5e7eb"><span class="swatch dot" style="background:#16a34a"></span>Dalam wilayah<br><span class="swatch dot" style="background:#f59e0b"></span>Perlu verifikasi<br><span class="swatch dot" style="background:#dc2626"></span>Di luar wilayah';return div};legend.addTo(map);
-async function fetchJSON(url){const r=await fetch(url);if(!r.ok)throw new Error(url+' HTTP '+r.status);return r.json()}
-function refresh(){const q=el('search').value.trim().toLocaleLowerCase('id');const district=el('district').value,kind=el('kind').value,quality=el('quality').value;
-const matches=facilities.filter(f=>{const p=f.properties||{};return (!q||String(p.nama||'').toLocaleLowerCase('id').includes(q))&&(!district||p.kecamatan===district)&&(!kind||p.jenis===kind)&&(!quality||p.status_spasial===quality)});
-if(pointLayer)map.removeLayer(pointLayer);
-pointLayer=L.geoJSON({type:'FeatureCollection',features:matches},{pane:'pointPane',pointToLayer:(f,ll)=>L.circleMarker(ll,{pane:'pointPane',radius:7,weight:2,color:'#fff',fillColor:statusColor(f.properties.status_spasial),fillOpacity:1}),onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup('<strong>'+safe(p.nama)+'</strong><hr>Jenis: '+safe(p.jenis)+'<br>Desa: '+safe(p.desa)+'<br>Kecamatan: '+safe(p.kecamatan)+'<br>Status: '+safe(p.status_spasial))}});
-if(el('showPoints').checked)pointLayer.addTo(map);
-el('visibleCount').textContent=matches.length+' dari '+facilities.length+' titik fasilitas ditampilkan';
-if(villageLayer){el('showVillages').checked?map.addLayer(villageLayer):map.removeLayer(villageLayer)}
-if(districtLayer){el('showDistricts').checked?map.addLayer(districtLayer):map.removeLayer(districtLayer)}
-}
-function addOptions(id,values){const sel=el(id);[...new Set(values.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id')).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o)})}
-async function init(){try{const [dash,points,villages,districts]=await Promise.all([fetchJSON('/api/dashboard'),fetchJSON('/api/fasilitas/geojson'),fetchJSON('/api/wilayah/desa'),fetchJSON('/api/wilayah/kecamatan')]);
-facilities=points.features||[];villageData=villages;districtData=districts;
-el('sTotal').textContent=dash.total_fasilitas??facilities.length;el('sDistricts').textContent=districts.features.length;el('sVillages').textContent=villages.features.length;el('sMatched').textContent=(dash.persentase_terpetakan??0)+'%';el('sReview').textContent=(dash.perlu_verifikasi??0)+' perlu verifikasi';
-addOptions('district',districts.features.map(f=>f.properties.kecamatan));addOptions('kind',facilities.map(f=>f.properties.jenis));
-districtLayer=L.geoJSON(districtData,{pane:'districtPane',style:f=>({color:'#8a6115',weight:2,fillColor:districtColor(Number(f.properties.total_fasilitas||0)),fillOpacity:.36}),onEachFeature:(f,l)=>{const p=f.properties;l.bindPopup('<strong>Kecamatan '+safe(p.kecamatan)+'</strong><hr>Total fasilitas: '+safe(p.total_fasilitas)+'<br>Puskesmas: '+safe(p.puskesmas)+'<br>Pustu: '+safe(p.pustu)+'<br>Poskesdes: '+safe(p.poskesdes))}});
-villageLayer=L.geoJSON(villageData,{pane:'villagePane',style:{color:'#475569',weight:.8,fillOpacity:0,opacity:.6},onEachFeature:(f,l)=>l.bindPopup('<strong>Desa '+safe(f.properties.desa)+'</strong><br>Kecamatan: '+safe(f.properties.kecamatan))});
-const bounds=districtLayer.getBounds();if(bounds.isValid())map.fitBounds(bounds,{padding:[18,18]});
-refresh();el('connection').textContent='● API terhubung';el('message').textContent='Data live dari PostGIS · Titik oranye memerlukan verifikasi lokasi';setTimeout(()=>map.invalidateSize(),100);
-}catch(err){console.error(err);el('connection').textContent='● API bermasalah';el('message').textContent='Gagal memuat data: '+err.message+' — pastikan Uvicorn aktif dan endpoint API tersedia.'}}
-['search','district','kind','quality','showPoints','showVillages','showDistricts'].forEach(id=>el(id).addEventListener(id==='search'?'input':'change',refresh));init();
-</script>
-</body></html>
+  <div class="shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <div class="brand-title">AKHARI GeoLake</div>
+          <div class="brand-subtitle">Geospatial Intelligence</div>
+        </div>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="sidebar-heading">Workspace</div>
+        <div class="nav-item">◈ WebGIS Dashboard</div>
+
+        <div class="sidebar-heading">Filter Fasilitas</div>
+
+        <label class="field-label" for="search">Cari nama fasilitas</label>
+        <input id="search" type="search" placeholder="Ketik nama fasilitas...">
+
+        <label class="field-label" for="district">Kecamatan</label>
+        <select id="district">
+          <option value="">Semua kecamatan</option>
+        </select>
+
+        <label class="field-label" for="kind">Jenis fasilitas</label>
+        <select id="kind">
+          <option value="">Semua jenis</option>
+        </select>
+
+        <label class="field-label" for="quality">Status spasial</label>
+        <select id="quality">
+          <option value="">Semua status</option>
+          <option value="DALAM WILAYAH">Dalam wilayah</option>
+          <option value="PERLU VERIFIKASI">Perlu verifikasi</option>
+          <option value="DI LUAR WILAYAH">Di luar wilayah</option>
+        </select>
+
+        <div class="sidebar-heading">Analisis Akses Kesehatan</div>
+
+        <label class="toggle">
+          <input id="showAccess" type="checkbox">
+          Peta jarak fasilitas per desa
+        </label>
+
+        <label class="field-label" for="distanceCategory">Kategori jarak</label>
+        <select id="distanceCategory">
+          <option value="">Semua kategori</option>
+          <option value="0-1 KM">0–1 km</option>
+          <option value="1-3 KM">1–3 km</option>
+          <option value="3-5 KM">3–5 km</option>
+          <option value=">5 KM">Lebih dari 5 km</option>
+          <option value="BELUM ADA DATA">Belum ada data</option>
+        </select>
+
+        <div id="accessSummary" class="sidebar-note">
+          Aktifkan layer untuk memuat analisis akses desa.
+        </div>
+
+        <div class="sidebar-heading">Layer Peta</div>
+
+        <label class="toggle">
+          <input id="showPoints" type="checkbox" checked>
+          Titik fasilitas kesehatan
+        </label>
+
+        <label class="toggle">
+          <input id="showVillages" type="checkbox" checked>
+          Batas desa
+        </label>
+
+        <label class="toggle">
+          <input id="showDistricts" type="checkbox" checked>
+          Tematik kecamatan
+        </label>
+      </div>
+
+      <div class="sidebar-footer">
+        ● PostgreSQL / PostGIS lokal
+        <div>Data fasilitas memerlukan validasi lapangan.</div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Dashboard Geospasial</h1>
+          <p>Analisis fasilitas kesehatan · Kabupaten Nias Barat</p>
+        </div>
+        <div id="connection" class="connection">Menghubungkan API...</div>
+      </header>
+
+      <div class="content">
+
+        <!-- STATISTICS -->
+        <section class="stats">
+          <article class="stat-card">
+            <div class="stat-label">Total Fasilitas</div>
+            <div id="sTotal" class="stat-value">—</div>
+            <div class="stat-note">Tercatat dalam database</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-label">Kecamatan</div>
+            <div id="sDistricts" class="stat-value">—</div>
+            <div class="stat-note">Wilayah administrasi</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-label">Desa</div>
+            <div id="sVillages" class="stat-value">—</div>
+            <div class="stat-note">Polygon administrasi desa</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-label">Kecocokan Spasial</div>
+            <div id="sMatched" class="stat-value">—</div>
+            <div id="sReview" class="stat-note">Menunggu data</div>
+          </article>
+        </section>
+
+        <!-- MAP -->
+        <section class="panel map-card" id="mapSection" style="padding:0">
+          <div class="map-toolbar">
+            <div>
+              <h2>Peta Distribusi dan Akses Kesehatan</h2>
+              <span id="visibleCount">Memuat data...</span>
+            </div>
+          </div>
+
+          <div id="map"></div>
+
+          <div id="message" class="map-message">
+            Mengambil data dari AKHARI GeoLake API...
+          </div>
+        </section>
+
+        <!-- PRIORITY TABLE -->
+        <section class="panel" id="priorityPanel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">ANALISIS SPASIAL</span>
+              <h2>Prioritas Akses Kesehatan Desa</h2>
+              <p>Pemeringkatan awal berdasarkan jarak fasilitas terdekat.</p>
+            </div>
+            <button id="refreshPriority" class="gold-button" type="button">
+              ↻ Muat Ulang
+            </button>
+          </div>
+
+          <div class="panel-filters">
+            <input
+              id="prioritySearch"
+              type="search"
+              placeholder="Cari nama desa..."
+              aria-label="Cari nama desa"
+            >
+
+            <select id="priorityDistrict" aria-label="Filter kecamatan">
+              <option value="">Semua Kecamatan</option>
+            </select>
+
+            <select id="priorityCategory" aria-label="Filter jarak">
+              <option value="">Semua Kategori Jarak</option>
+              <option value="0-1 KM">0–1 km</option>
+              <option value="1-3 KM">1–3 km</option>
+              <option value="3-5 KM">3–5 km</option>
+              <option value=">5 KM">Lebih dari 5 km</option>
+              <option value="BELUM ADA DATA">Belum Ada Data</option>
+            </select>
+          </div>
+
+          <div class="panel-toolbar">
+            <span id="priorityStatus" role="status">Menunggu data...</span>
+            <span>Pilih desa untuk melihat peta dan rekomendasi.</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="priority-table">
+              <thead>
+                <tr>
+                  <th>Peringkat</th>
+                  <th>Desa</th>
+                  <th>Kecamatan</th>
+                  <th>Jarak</th>
+                  <th>Prioritas</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="priorityTableBody">
+                <tr><td colspan="6">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="disclaimer">
+            Pemeringkatan merupakan bahan penelaahan awal, bukan keputusan
+            pembangunan fasilitas kesehatan. Jarak dihitung secara garis
+            lurus dari titik representatif desa.
+          </p>
+        </section>
+
+        <!-- RECOMMENDATIONS -->
+        <section class="panel" id="recommendationPanel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">REKOMENDASI BERBASIS DATA</span>
+              <h2>Analisis dan Tindak Lanjut Desa</h2>
+              <p>
+                Bahan awal koordinasi dan evaluasi pembangunan daerah.
+              </p>
+            </div>
+            <span class="recommendation-label">Perlu Validasi</span>
+          </div>
+
+          <div class="recommendation-selector">
+            <label for="recommendationVillage">
+              Pilih desa yang akan dianalisis
+            </label>
+            <select id="recommendationVillage">
+              <option value="">Memuat daftar desa...</option>
+            </select>
+          </div>
+
+          <div
+            id="recommendationEmpty"
+            class="recommendation-empty"
+            role="status"
+          >
+            Pilih desa untuk melihat hasil analisis dan rekomendasi.
+          </div>
+
+          <div id="recommendationContent" hidden>
+            <div class="recommendation-summary">
+              <div>
+                <span>Desa</span>
+                <strong id="recVillage">—</strong>
+              </div>
+              <div>
+                <span>Kecamatan</span>
+                <strong id="recDistrict">—</strong>
+              </div>
+              <div>
+                <span>Fasilitas Terdekat</span>
+                <strong id="recFacility">—</strong>
+              </div>
+              <div>
+                <span>Jarak Garis Lurus</span>
+                <strong id="recDistance">—</strong>
+              </div>
+            </div>
+
+            <div class="recommendation-grid">
+              <article class="recommendation-card">
+                <div class="recommendation-card-title">
+                  <span>01</span> Identifikasi Kondisi
+                </div>
+                <p id="recProblem">—</p>
+              </article>
+
+              <article class="recommendation-card">
+                <div class="recommendation-card-title">
+                  <span>02</span> Hasil Analisis
+                </div>
+                <p id="recAnalysis">—</p>
+              </article>
+
+              <article class="recommendation-card">
+                <div class="recommendation-card-title">
+                  <span>03</span> Rekomendasi Awal
+                </div>
+                <p id="recRecommendation">—</p>
+              </article>
+
+              <article class="recommendation-card">
+                <div class="recommendation-card-title">
+                  <span>04</span> Tindak Lanjut
+                </div>
+                <p id="recAction">—</p>
+              </article>
+            </div>
+
+            <div class="recommendation-footer">
+              <div>
+                <span>OPD yang Perlu Dilibatkan</span>
+                <strong id="recOPD">—</strong>
+              </div>
+
+              <button
+                id="copyRecommendation"
+                class="gold-button"
+                type="button"
+              >
+                Salin Hasil Analisis
+              </button>
+            </div>
+          </div>
+
+          <p class="disclaimer">
+            Rekomendasi menggunakan aturan berbasis jarak dan data fasilitas
+            yang tersedia. Hasil wajib diverifikasi dengan data sektoral,
+            akses jalan, kebutuhan penduduk, dan kondisi lapangan.
+          </p>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    "use strict";
+
+    /* =========================================
+       UTILITIES
+    ========================================= */
+
+    const $ = id => document.getElementById(id);
+
+    function safe(value) {
+      return String(value ?? "-").replace(
+        /[&<>"']/g,
+        char => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[char]
+      );
+    }
+
+    async function fetchJSON(url) {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`${url}: HTTP ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    function formatDistance(meters) {
+      if (meters == null || !Number.isFinite(Number(meters))) {
+        return "Belum tersedia";
+      }
+
+      return (
+        (Number(meters) / 1000).toLocaleString("id-ID", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }) + " km"
+      );
+    }
+
+    function statusColor(status) {
+      if (status === "DALAM WILAYAH") return "#16a34a";
+      if (status === "PERLU VERIFIKASI") return "#f59e0b";
+      return "#dc2626";
+    }
+
+    function accessColor(category) {
+      return {
+        "0-1 KM": "#16a34a",
+        "1-3 KM": "#84cc16",
+        "3-5 KM": "#f59e0b",
+        ">5 KM": "#dc2626"
+      }[category] || "#94a3b8";
+    }
+
+    function districtColor(total) {
+      if (total <= 2) return "#fde68a";
+      if (total <= 4) return "#f59e0b";
+      return "#b45309";
+    }
+
+    function populateOptions(id, values) {
+      const select = $(id);
+
+      [...new Set(values.filter(Boolean))]
+        .sort((a, b) => String(a).localeCompare(String(b), "id"))
+        .forEach(value => {
+          select.add(new Option(value, value));
+        });
+    }
+
+    function appendCell(row, value) {
+      const cell = document.createElement("td");
+      cell.textContent = String(value ?? "-");
+      row.appendChild(cell);
+      return cell;
+    }
+
+    /* =========================================
+       MAP STATE
+    ========================================= */
+
+    const map = L.map("map", {
+      preferCanvas: true
+    }).setView([1.05, 97.49], 11);
+
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      }
+    ).addTo(map);
+
+    const panes = {
+      districtPane: 350,
+      accessPane: 370,
+      villagePane: 390,
+      priorityPane: 440,
+      pointPane: 450
+    };
+
+    Object.entries(panes).forEach(([name, zIndex]) => {
+      map.createPane(name);
+      map.getPane(name).style.zIndex = zIndex;
+    });
+
+    let facilities = [];
+    let districtData = null;
+    let villageData = null;
+    let accessData = null;
+
+    let pointLayer = null;
+    let districtLayer = null;
+    let villageLayer = null;
+    let accessLayer = null;
+    let priorityHighlightLayer = null;
+
+    let priorityRows = [];
+    let recommendationRows = [];
+    let selectedRecommendation = null;
+
+    let accessLoadingPromise = null;
+    let activeLegend = null;
+
+    /* =========================================
+       LEGENDS
+    ========================================= */
+
+    const districtLegend = L.control({
+      position: "bottomright"
+    });
+
+    districtLegend.onAdd = function () {
+      const div = L.DomUtil.create("div", "legend");
+
+      div.innerHTML = `
+        <strong>Jumlah Fasilitas / Kecamatan</strong>
+        <span class="swatch" style="background:#fde68a"></span>
+        0–2 fasilitas<br>
+        <span class="swatch" style="background:#f59e0b"></span>
+        3–4 fasilitas<br>
+        <span class="swatch" style="background:#b45309"></span>
+        5+ fasilitas<hr>
+        <span class="swatch circle" style="background:#16a34a"></span>
+        Dalam wilayah<br>
+        <span class="swatch circle" style="background:#f59e0b"></span>
+        Perlu verifikasi<br>
+        <span class="swatch circle" style="background:#dc2626"></span>
+        Di luar wilayah
+      `;
+
+      return div;
+    };
+
+    const accessLegend = L.control({
+      position: "bottomright"
+    });
+
+    accessLegend.onAdd = function () {
+      const div = L.DomUtil.create("div", "legend");
+
+      div.innerHTML = `
+        <strong>Jarak Fasilitas Terdekat</strong>
+        <span class="swatch" style="background:#16a34a"></span>
+        0–1 km<br>
+        <span class="swatch" style="background:#84cc16"></span>
+        1–3 km<br>
+        <span class="swatch" style="background:#f59e0b"></span>
+        3–5 km<br>
+        <span class="swatch" style="background:#dc2626"></span>
+        Lebih dari 5 km<br>
+        <span class="swatch" style="background:#94a3b8"></span>
+        Belum ada data
+      `;
+
+      return div;
+    };
+
+    function setLegend(control) {
+      if (activeLegend === control) return;
+
+      if (activeLegend) {
+        map.removeControl(activeLegend);
+      }
+
+      activeLegend = control;
+
+      if (control) control.addTo(map);
+    }
+
+    /* =========================================
+       FACILITY POINTS
+    ========================================= */
+
+    function renderFacilityPoints() {
+      const search = $("search")
+        .value.trim().toLocaleLowerCase("id");
+
+      const district = $("district").value;
+      const kind = $("kind").value;
+      const quality = $("quality").value;
+
+      const filtered = facilities.filter(feature => {
+        const p = feature.properties || {};
+
+        const name = String(p.nama || "")
+          .toLocaleLowerCase("id");
+
+        return (
+          (!search || name.includes(search)) &&
+          (!district || p.kecamatan === district) &&
+          (!kind || p.jenis === kind) &&
+          (!quality || p.status_spasial === quality)
+        );
+      });
+
+      if (pointLayer) {
+        map.removeLayer(pointLayer);
+      }
+
+      pointLayer = L.geoJSON({
+        type: "FeatureCollection",
+        features: filtered
+      }, {
+        pane: "pointPane",
+
+        pointToLayer(feature, latlng) {
+          return L.circleMarker(latlng, {
+            pane: "pointPane",
+            radius: 7,
+            weight: 2,
+            color: "#ffffff",
+            fillColor: statusColor(
+              feature.properties?.status_spasial
+            ),
+            fillOpacity: 1
+          });
+        },
+
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {};
+
+          layer.bindPopup(`
+            <strong>${safe(p.nama)}</strong>
+            <hr>
+            Jenis: ${safe(p.jenis)}<br>
+            Desa: ${safe(p.desa)}<br>
+            Kecamatan: ${safe(p.kecamatan)}<br>
+            Status: ${safe(p.status_spasial)}
+          `);
+        }
+      });
+
+      if ($("showPoints").checked) {
+        pointLayer.addTo(map);
+      }
+
+      $("visibleCount").textContent =
+        `${filtered.length} dari ${facilities.length} titik fasilitas`;
+    }
+
+    /* =========================================
+       ADMINISTRATIVE LAYERS
+    ========================================= */
+
+    function createAdministrativeLayers() {
+      districtLayer = L.geoJSON(districtData, {
+        pane: "districtPane",
+
+        style(feature) {
+          const p = feature.properties || {};
+
+          return {
+            color: "#8a6115",
+            weight: 2,
+            fillColor: districtColor(
+              Number(p.total_fasilitas || 0)
+            ),
+            fillOpacity: .38
+          };
+        },
+
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {};
+
+          layer.bindPopup(`
+            <strong>Kecamatan ${safe(p.kecamatan)}</strong>
+            <hr>
+            Total fasilitas: ${safe(p.total_fasilitas)}<br>
+            Puskesmas: ${safe(p.puskesmas)}<br>
+            Pustu: ${safe(p.pustu)}<br>
+            Poskesdes: ${safe(p.poskesdes)}
+          `);
+        }
+      });
+
+      villageLayer = L.geoJSON(villageData, {
+        pane: "villagePane",
+
+        style: {
+          color: "#475569",
+          weight: .8,
+          opacity: .7,
+          fillOpacity: 0
+        },
+
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {};
+
+          layer.bindPopup(`
+            <strong>Desa ${safe(p.desa)}</strong><br>
+            Kecamatan: ${safe(p.kecamatan)}
+          `);
+        }
+      });
+    }
+
+    /* =========================================
+       ACCESS LAYER
+    ========================================= */
+
+    async function ensureAccessData() {
+      if (accessData) return accessData;
+
+      if (!accessLoadingPromise) {
+        accessLoadingPromise = fetchJSON(
+          "/api/analisis/akses-desa"
+        ).then(data => {
+          if (!Array.isArray(data.features)) {
+            throw new Error("GeoJSON akses desa tidak valid.");
+          }
+
+          accessData = data;
+          return data;
+        }).finally(() => {
+          accessLoadingPromise = null;
+        });
+      }
+
+      return accessLoadingPromise;
+    }
+
+    function createAccessLayer() {
+      if (accessLayer) return;
+
+      accessLayer = L.geoJSON(null, {
+        pane: "accessPane",
+
+        style(feature) {
+          return {
+            color: "#475569",
+            weight: 1,
+            fillColor: accessColor(
+              feature.properties?.kategori_jarak
+            ),
+            fillOpacity: .7
+          };
+        },
+
+        onEachFeature(feature, layer) {
+          const p = feature.properties || {};
+
+          layer.bindPopup(`
+            <strong>Desa ${safe(p.desa)}</strong>
+            <br>Kecamatan: ${safe(p.kecamatan)}
+            <hr>
+            Fasilitas terdekat:
+            ${safe(p.fasilitas_terdekat)}<br>
+            Jenis: ${safe(p.jenis_fasilitas)}<br>
+            Jarak: ${safe(formatDistance(p.jarak_meter))}<br>
+            Kategori: ${safe(p.kategori_jarak)}
+          `);
+        }
+      });
+    }
+
+    function renderAccessLayer() {
+      if (!accessData || !accessLayer) return;
+
+      const category = $("distanceCategory").value;
+
+      const filtered = accessData.features.filter(feature =>
+        !category ||
+        feature.properties?.kategori_jarak === category
+      );
+
+      accessLayer.clearLayers();
+      accessLayer.addData({
+        type: "FeatureCollection",
+        features: filtered
+      });
+
+      if ($("showAccess").checked) {
+        accessLayer.addTo(map);
+      }
+
+      $("accessSummary").textContent =
+        `${filtered.length} dari ${accessData.features.length} desa ditampilkan.`;
+    }
+
+    async function toggleAccessLayer() {
+      if (!$("showAccess").checked) {
+        updateLayers();
+        return;
+      }
+
+      try {
+        $("accessSummary").textContent =
+          "Memuat analisis akses desa...";
+
+        await ensureAccessData();
+        createAccessLayer();
+        updateLayers();
+
+      } catch (error) {
+        console.error("Access layer:", error);
+
+        $("showAccess").checked = false;
+        updateLayers();
+
+        $("accessSummary").textContent =
+          `Gagal memuat analisis: ${error.message}`;
+      }
+    }
+
+    function updateLayers() {
+      renderFacilityPoints();
+
+      if (villageLayer) {
+        if ($("showVillages").checked) {
+          villageLayer.addTo(map);
+        } else {
+          map.removeLayer(villageLayer);
+        }
+      }
+
+      if (districtLayer) {
+        if (
+          $("showDistricts").checked &&
+          !$("showAccess").checked
+        ) {
+          districtLayer.addTo(map);
+        } else {
+          map.removeLayer(districtLayer);
+        }
+      }
+
+      if ($("showAccess").checked) {
+        if (accessLayer) {
+          renderAccessLayer();
+        }
+
+        setLegend(accessLegend);
+      } else {
+        if (accessLayer) {
+          map.removeLayer(accessLayer);
+        }
+
+        $("accessSummary").textContent =
+          "Aktifkan layer untuk analisis akses desa.";
+
+        setLegend(
+          $("showDistricts").checked
+            ? districtLegend
+            : null
+        );
+      }
+    }
+
+    /* =========================================
+       PRIORITY TABLE
+    ========================================= */
+
+    async function loadPriorityData() {
+      const button = $("refreshPriority");
+      const status = $("priorityStatus");
+
+      button.disabled = true;
+      status.textContent = "Memuat prioritas desa...";
+
+      try {
+        const result = await fetchJSON(
+          "/api/analisis/prioritas-desa?limit=105"
+        );
+
+        if (!Array.isArray(result.data)) {
+          throw new Error("Format API prioritas tidak valid.");
+        }
+
+        priorityRows = result.data;
+
+        const select = $("priorityDistrict");
+        const previous = select.value;
+
+        select.replaceChildren(
+          new Option("Semua Kecamatan", "")
+        );
+
+        populateOptions(
+          "priorityDistrict",
+          priorityRows.map(row => row.kecamatan)
+        );
+
+        if ([...select.options].some(o => o.value === previous)) {
+          select.value = previous;
+        }
+
+        renderPriorityTable();
+
+      } catch (error) {
+        console.error("Priority API:", error);
+
+        status.textContent =
+          `Gagal memuat prioritas: ${error.message}`;
+
+        $("priorityTableBody").replaceChildren();
+
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function renderPriorityTable() {
+      const search = $("prioritySearch")
+        .value.trim().toLocaleLowerCase("id");
+
+      const district = $("priorityDistrict").value;
+      const category = $("priorityCategory").value;
+
+      const filtered = priorityRows.filter(row => {
+        const name = String(row.desa || "")
+          .toLocaleLowerCase("id");
+
+        return (
+          (!search || name.includes(search)) &&
+          (!district || row.kecamatan === district) &&
+          (!category || row.kategori_jarak === category)
+        );
+      });
+
+      const fragment = document.createDocumentFragment();
+
+      filtered.forEach(row => {
+        const tr = document.createElement("tr");
+
+        appendCell(tr, row.peringkat);
+        appendCell(tr, row.desa);
+        appendCell(tr, row.kecamatan);
+        appendCell(tr, formatDistance(row.jarak_meter));
+
+        const priorityCell = document.createElement("td");
+        const badge = document.createElement("span");
+
+        const level = Number(row.tingkat_prioritas);
+
+        badge.className = "priority-badge";
+
+        badge.classList.add(
+          [1, 2, 3, 4].includes(level)
+            ? `priority-level-${level}`
+            : "priority-level-unknown"
+        );
+
+        badge.textContent =
+          row.label_prioritas || "Belum diklasifikasi";
+
+        priorityCell.appendChild(badge);
+        tr.appendChild(priorityCell);
+
+        const actionCell = document.createElement("td");
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className = "dark-button";
+        button.textContent = "Lihat di Peta";
+
+        button.addEventListener("click", async () => {
+          await focusPriorityVillage(row.id_desa);
+        });
+
+        actionCell.appendChild(button);
+        tr.appendChild(actionCell);
+        fragment.appendChild(tr);
+      });
+
+      const tbody = $("priorityTableBody");
+      tbody.replaceChildren(fragment);
+
+      if (filtered.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+
+        td.colSpan = 6;
+        td.textContent = "Tidak ada desa sesuai filter.";
+        td.style.textAlign = "center";
+
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+
+      $("priorityStatus").textContent =
+        `${filtered.length} dari ${priorityRows.length} desa`;
+    }
+
+    /* =========================================
+       RECOMMENDATION PANEL
+    ========================================= */
+
+    async function loadRecommendations() {
+      const select = $("recommendationVillage");
+
+      try {
+        const result = await fetchJSON(
+          "/api/analisis/rekomendasi-desa?limit=105"
+        );
+
+        if (!Array.isArray(result.data)) {
+          throw new Error("Format API rekomendasi tidak valid.");
+        }
+
+        recommendationRows = result.data;
+
+        const previous = select.value;
+
+        select.replaceChildren(
+          new Option("Pilih desa...", "")
+        );
+
+        const sorted = [...recommendationRows].sort(
+          (a, b) =>
+            String(a.kecamatan || "").localeCompare(
+              String(b.kecamatan || ""),
+              "id"
+            ) ||
+            String(a.desa || "").localeCompare(
+              String(b.desa || ""),
+              "id"
+            )
+        );
+
+        sorted.forEach(row => {
+          select.add(
+            new Option(
+              `${row.desa} — ${row.kecamatan}`,
+              String(row.id_desa)
+            )
+          );
+        });
+
+        if ([...select.options].some(o => o.value === previous)) {
+          select.value = previous;
+          showRecommendation(previous);
+        }
+
+      } catch (error) {
+        console.error("Recommendation API:", error);
+
+        select.replaceChildren(
+          new Option("Gagal memuat daftar desa", "")
+        );
+
+        $("recommendationEmpty").textContent =
+          `Gagal memuat rekomendasi: ${error.message}`;
+
+        $("recommendationEmpty").hidden = false;
+        $("recommendationContent").hidden = true;
+      }
+    }
+
+    function showRecommendation(idDesa) {
+      const row = recommendationRows.find(
+        item => String(item.id_desa) === String(idDesa)
+      );
+
+      if (!row) {
+        selectedRecommendation = null;
+        $("recommendationContent").hidden = true;
+        $("recommendationEmpty").hidden = false;
+        return;
+      }
+
+      selectedRecommendation = row;
+
+      $("recommendationContent").hidden = false;
+      $("recommendationEmpty").hidden = true;
+
+      const setText = (id, value) => {
+        $(id).textContent = value ?? "Belum tersedia";
+      };
+
+      setText("recVillage", row.desa);
+      setText("recDistrict", row.kecamatan);
+      setText("recFacility", row.fasilitas_terdekat);
+      setText("recDistance", formatDistance(row.jarak_meter));
+
+      setText(
+        "recProblem",
+        row.alasan_rekomendasi
+      );
+
+      setText(
+        "recAnalysis",
+        [
+          `Kategori akses: ${row.kategori_jarak ?? "-"}.`,
+          `Prioritas: ${row.label_prioritas ?? "-"}.`,
+          "Analisis menggunakan jarak garis lurus",
+          "dan belum menghitung waktu tempuh melalui jalan."
+        ].join(" ")
+      );
+
+      setText(
+        "recRecommendation",
+        row.kategori_rekomendasi
+      );
+
+      setText(
+        "recAction",
+        row.tindak_lanjut
+      );
+
+      setText(
+        "recOPD",
+        row.opd_terkait
+      );
+    }
+
+    async function copyRecommendation() {
+      if (!selectedRecommendation) return;
+
+      const row = selectedRecommendation;
+
+      const text = [
+        "AKHARI GEOLAKE",
+        "HASIL ANALISIS AKSES KESEHATAN DESA",
+        "",
+        `Desa: ${row.desa}`,
+        `Kecamatan: ${row.kecamatan}`,
+        `Fasilitas terdekat: ${row.fasilitas_terdekat}`,
+        `Jarak: ${formatDistance(row.jarak_meter)}`,
+        `Kategori akses: ${row.kategori_jarak}`,
+        `Prioritas: ${row.label_prioritas}`,
+        "",
+        "IDENTIFIKASI KONDISI",
+        row.alasan_rekomendasi ?? "-",
+        "",
+        "HASIL ANALISIS",
+        `Kategori: ${row.kategori_jarak ?? "-"}`,
+        `Prioritas: ${row.label_prioritas ?? "-"}`,
+        "",
+        "REKOMENDASI AWAL",
+        row.kategori_rekomendasi ?? "-",
+        "",
+        "TINDAK LANJUT",
+        row.tindak_lanjut ?? "-",
+        "",
+        "OPD TERKAIT",
+        row.opd_terkait ?? "-",
+        "",
+        "CATATAN",
+        "Hasil analisis awal, perlu validasi lapangan",
+        "dan pemeriksaan data sektoral sebelum digunakan."
+      ].join("\n");
+
+      const button = $("copyRecommendation");
+
+      try {
+        await navigator.clipboard.writeText(text);
+
+        button.textContent = "Berhasil Disalin";
+
+        setTimeout(() => {
+          button.textContent = "Salin Hasil Analisis";
+        }, 2000);
+
+      } catch (error) {
+        console.error("Clipboard:", error);
+        button.textContent = "Gagal Menyalin";
+
+        setTimeout(() => {
+          button.textContent = "Salin Hasil Analisis";
+        }, 2000);
+      }
+    }
+
+    /* =========================================
+       FOCUS SELECTED VILLAGE
+    ========================================= */
+
+    async function focusPriorityVillage(idDesa) {
+      try {
+        const data = await ensureAccessData();
+
+        // The access GeoJSON must expose the village ID
+        // in Feature.id or Feature.properties.id_desa.
+        const feature = data.features.find(item => {
+          const featureId =
+            item.id ?? item.properties?.id_desa;
+
+          return String(featureId) === String(idDesa);
+        });
+
+        if (!feature) {
+          throw new Error(
+            "Polygon desa tidak ditemukan berdasarkan id_desa. " +
+            "Periksa ID pada endpoint akses-desa."
+          );
+        }
+
+        if (priorityHighlightLayer) {
+          map.removeLayer(priorityHighlightLayer);
+        }
+
+        priorityHighlightLayer = L.geoJSON(feature, {
+          pane: "priorityPane",
+
+          style: {
+            color: "#13243b",
+            weight: 4,
+            fillColor: "#ffca21",
+            fillOpacity: .45
+          },
+
+          onEachFeature(item, layer) {
+            const p = item.properties || {};
+
+            layer.bindPopup(`
+              <strong>Desa ${safe(p.desa)}</strong><br>
+              Kecamatan: ${safe(p.kecamatan)}<br>
+              Fasilitas terdekat:
+              ${safe(p.fasilitas_terdekat)}<br>
+              Jarak: ${safe(formatDistance(p.jarak_meter))}
+            `);
+          }
+        }).addTo(map);
+
+        $("mapSection").scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+
+        const bounds = priorityHighlightLayer.getBounds();
+
+        if (bounds.isValid()) {
+          map.invalidateSize();
+
+          map.fitBounds(bounds, {
+            padding: [35, 35],
+            maxZoom: 14
+          });
+        }
+
+        priorityHighlightLayer.eachLayer(layer => {
+          if (layer.openPopup) layer.openPopup();
+        });
+
+        // Synchronize the recommendation panel.
+        const villageId = String(idDesa);
+
+        const recommendationExists = recommendationRows.some(
+          row => String(row.id_desa) === villageId
+        );
+
+        if (recommendationExists) {
+          $("recommendationVillage").value = villageId;
+          showRecommendation(villageId);
+        }
+
+        $("priorityStatus").textContent =
+          recommendationExists
+            ? "Desa ditampilkan pada peta dan rekomendasi disiapkan."
+            : "Desa ditampilkan pada peta; rekomendasi belum tersedia.";
+
+      } catch (error) {
+        console.error("Focus village:", error);
+
+        $("priorityStatus").textContent =
+          `Gagal menampilkan desa: ${error.message}`;
+      }
+    }
+
+    /* =========================================
+       INITIALIZE DASHBOARD
+    ========================================= */
+
+    async function initializeDashboard() {
+      const connection = $("connection");
+
+      try {
+        const [
+          dashboard,
+          points,
+          villages,
+          districts
+        ] = await Promise.all([
+          fetchJSON("/api/dashboard"),
+          fetchJSON("/api/fasilitas/geojson"),
+          fetchJSON("/api/wilayah/desa"),
+          fetchJSON("/api/wilayah/kecamatan")
+        ]);
+
+        facilities = points.features || [];
+        villageData = villages;
+        districtData = districts;
+
+        $("sTotal").textContent =
+          dashboard.total_fasilitas ?? facilities.length;
+
+        $("sDistricts").textContent =
+          districts.features.length;
+
+        $("sVillages").textContent =
+          villages.features.length;
+
+        $("sMatched").textContent =
+          `${dashboard.persentase_terpetakan ?? 0}%`;
+
+        $("sReview").textContent =
+          `${dashboard.perlu_verifikasi ?? 0} perlu verifikasi`;
+
+        populateOptions(
+          "district",
+          districts.features.map(
+            f => f.properties?.kecamatan
+          )
+        );
+
+        populateOptions(
+          "kind",
+          facilities.map(
+            f => f.properties?.jenis
+          )
+        );
+
+        createAdministrativeLayers();
+        updateLayers();
+
+        const bounds = districtLayer.getBounds();
+
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            padding: [20, 20]
+          });
+        }
+
+        connection.textContent = "● API Terhubung";
+        connection.className = "connection connected";
+
+        $("message").textContent =
+          "Data berasal dari PostgreSQL/PostGIS lokal. " +
+          "Koordinat yang belum sesuai memerlukan verifikasi.";
+
+        setTimeout(() => map.invalidateSize(), 150);
+
+      } catch (error) {
+        console.error("Dashboard API:", error);
+
+        connection.textContent = "● API Bermasalah";
+        connection.className = "connection error";
+
+        $("message").textContent =
+          `Gagal memuat dashboard: ${error.message}`;
+      }
+    }
+
+    /* =========================================
+       EVENT LISTENERS
+    ========================================= */
+
+    $("search").addEventListener("input", updateLayers);
+
+    [
+      "district",
+      "kind",
+      "quality",
+      "showPoints",
+      "showVillages",
+      "showDistricts"
+    ].forEach(id => {
+      $(id).addEventListener("change", updateLayers);
+    });
+
+    $("showAccess").addEventListener(
+      "change",
+      toggleAccessLayer
+    );
+
+    $("distanceCategory").addEventListener(
+      "change",
+      () => {
+        if (accessData && $("showAccess").checked) {
+          renderAccessLayer();
+        }
+      }
+    );
+
+    $("prioritySearch").addEventListener(
+      "input",
+      renderPriorityTable
+    );
+
+    $("priorityDistrict").addEventListener(
+      "change",
+      renderPriorityTable
+    );
+
+    $("priorityCategory").addEventListener(
+      "change",
+      renderPriorityTable
+    );
+
+    $("refreshPriority").addEventListener(
+      "click",
+      loadPriorityData
+    );
+
+    $("recommendationVillage").addEventListener(
+      "change",
+      event => showRecommendation(event.target.value)
+    );
+
+    $("copyRecommendation").addEventListener(
+      "click",
+      copyRecommendation
+    );
+
+    /* =========================================
+       START APPLICATION
+    ========================================= */
+
+    initializeDashboard();
+    loadPriorityData();
+    loadRecommendations();
+
+  </script>
+</body>
+</html>
