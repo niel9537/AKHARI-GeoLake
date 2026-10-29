@@ -537,3 +537,7 @@ def daftar_rekomendasi_desa(
                 "sudah tersedia."
             ),
         )
+
+
+from api.verifikasi_router import router as verifikasi_router
+app.include_router(verifikasi_router)
